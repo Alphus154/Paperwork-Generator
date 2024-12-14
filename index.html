@@ -337,13 +337,14 @@
                         <textarea id="txtIncidentSummary" class="form-control" style="width: 600px" rows="5"></textarea>
                     </div>
                 </div>
-
-                <div class="row mb-2">
-                    <div class="col-md-2" style="font-weight: bold; text-align: right;">Proof of RP:</div>
-                    <div class="col-md-10">
-                        <input type="text" id="txtProofRP" class="form-control" style="width: 600px" />
-                    </div>
-                </div>
+<div class="row mb-2">
+    <div class="col-md-2" style="font-weight: bold; text-align: right;">Proof of RP (Incident Report):</div>
+    <div class="col-md-10">
+        <input type="text" id="txtProofOfRPIncident" class="form-control mb-2" style="width: 600px" placeholder="Uploaded image URL will appear here" />
+        <button class="btn btn-success" id="uploadProofOfRPIncidentButton">Upload Image</button>
+        <p id="proofOfRPIncidentStatus" class="mt-2"></p>
+    </div>
+</div>
 
                 <div class="row mb-2">
                     <div class="col-md-2" style="font-weight: bold; text-align: right;">Evidence:</div>
@@ -748,13 +749,14 @@
                     </div>
                 </div>
 
-                <!-- Proof of RP -->
-                <div class="row mb-2">
-                    <div class="col-md-2" style="font-weight: bold; text-align: right;">Proof of RP:</div>
-                    <div class="col-md-10">
-                        <input type="text" id="txtProofOfRPWarrant" class="form-control" style="width: 600px" />
-                    </div>
-                </div>
+              <div class="row mb-2">
+    <div class="col-md-2" style="font-weight: bold; text-align: right;">Proof of RP (Warrant):</div>
+    <div class="col-md-10">
+        <input type="text" id="txtProofOfRPWarrant" class="form-control mb-2" style="width: 600px" placeholder="Uploaded image URL will appear here" />
+        <button class="btn btn-success" id="uploadProofOfRPWarrantButton">Upload Image</button>
+        <p id="proofOfRPWarrantStatus" class="mt-2"></p>
+    </div>
+</div>
 
                 <!-- Bodycam Footage -->
                 <div class="row mb-2">
@@ -1506,6 +1508,85 @@ ${signatureSection}
         }
 
     </script>
+<script>
+// Imgur Client ID
+const IMGUR_CLIENT_ID = '47e4045e5bc753e'; // Replace with your actual Imgur Client ID
+
+// Universal Upload Function
+function uploadToImgur(file, statusElementId, textInputId) {
+    // Update status
+    const statusElement = document.getElementById(statusElementId);
+    statusElement.innerText = 'Uploading...';
+
+    // Create a FormData object and append the file
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Use fetch API to upload the image
+    fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+            Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+        },
+        body: formData,
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const imageUrl = data.data.link;
+
+                // Populate the input field with the image URL
+                document.getElementById(textInputId).value = imageUrl;
+
+                // Update status to success
+                statusElement.innerText = 'Image uploaded successfully!';
+            } else {
+                // Handle errors from Imgur API
+                throw new Error(data.data.error || 'Unknown error');
+            }
+        })
+        .catch(error => {
+            console.error('Error uploading image:', error);
+            // Update status to error
+            statusElement.innerText = 'Failed to upload the image. Please try again.';
+        });
+}
+
+// Event listener for Incident Report
+document.getElementById('uploadProofOfRPIncidentButton').addEventListener('click', function () {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+
+    input.addEventListener('change', function () {
+        const file = input.files[0];
+        if (file) {
+            uploadToImgur(file, 'proofOfRPIncidentStatus', 'txtProofOfRPIncident');
+        } else {
+            document.getElementById('proofOfRPIncidentStatus').innerText = 'No file selected.';
+        }
+    });
+});
+
+// Event listener for Proof of RP Warrant
+document.getElementById('uploadProofOfRPWarrantButton').addEventListener('click', function () {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+
+    input.addEventListener('change', function () {
+        const file = input.files[0];
+        if (file) {
+            uploadToImgur(file, 'proofOfRPWarrantStatus', 'txtProofOfRPWarrant');
+        } else {
+            document.getElementById('proofOfRPWarrantStatus').innerText = 'No file selected.';
+        }
+    });
+});
+</script>
+
 </body>
 
 </html>
